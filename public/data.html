@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>   
+<script type="text/javascript">
+ function CreateInput(){
+ 	var i=0;
+ 	for (x in attArray)
+    {
+    	var attname=attName[i++];
+    	var input = document.createElement("input" ); 
+        input.type = "text" ;
+        input.id = attname;
+        input.value =0;
+        input.className = "TextStyle" ;
+        $("#preparsed").append(attname,input,"<br>");
+    }
+     b = document.createElement("input"); 
+     b.type = "button" ;
+     b.id = "ppp";
+     b.value="Predict!";
+    $("#preparsed").append(b);
+
+    $("#ppp").click(function(){ 
+        var datas={};
+        var input={};
+        var i=0;
+        for(;i<attArray.length;i++)
+        {
+        	var t=document.getElementById(attName[i]);
+        	input[attArray[i]]=t.value;
+        }
+        var modelvalue="model/"+$("#modelid").val();
+        datas["model"]=modelvalue;
+        datas["input_data"]=input;
+          $.ajax({
+            url: "http://localhost:8081/create?type=prediction",
+            beforeSend: function(xhrObj){
+                // Request headers
+                xhrObj.setRequestHeader("Content-Type","application/json");
+            },
+            type:"POST",
+            contentType:"application/json;charset=utf-8",
+            data:JSON.stringify(datas),
+            success:function(data)
+            {
+              $("#preresult").empty();
+              var content="";
+               content+="<li>Resource:"+data.resource+"</li>";
+               content+="<li>Predction Field Name:"+data.objective_field_name+"</li>";
+               content+="<li>Prediction Result:"+data.output+"</li>";
+              $("#preresult").append(content);
+            },
+        });
+     });
+}
+ 
+
+$(document).ready(function(){
+    $("#re").ajaxError(function(e,xhr,opt){
+    alert("Error requesting " + opt.url + ": " + xhr.status + " " + xhr.statusText);
+  });
+
+   $("#re").click(function(){   
+   $.get("http://localhost:8081/getresource",
+  {
+    resourceid:$("#rid").val(),
+    type:$("#selectID").val()
+  },
+  function(data)
+  {
+  	var content="";
+	$("#parsed").empty();
+
+     content="<li>Name:"+data.name+"</li>";
+
+     content+="<li>Resource:"+data.resource+"</li>";
+
+     content+="<li>Description:<br>"+data.description+"</li>";
+     content+="<li>Created Time:"+data.created+"</li>";
+     var tags=data.tags;
+     content+="<li>Tags:";
+      $.each(tags,function(index,value)
+      {
+        content+="&nbsp;&nbsp;"+tags[index];
+      });
+      content+="</li>";
+
+       $("#parsed").append(content);
+ }
+)
+});
+       
+       $("#upload").click(function(){  
+    $.ajax({
+    url: "http://localhost:8081/upload",
+    type: 'POST',
+    cache: false,
+    data: new FormData($("#uploadForm")[0]),
+    processData: false,
+    contentType: false
+}).done(function(data) {
+      var content="";
+      $("#uploadparsed").empty();
+       content+="<li>Created Time:"+data.created+"</li>";
+       content+="<li>File Name:"+data.file_name+"</li>";
+       content+="<li>Resource:"+data.resource+"</li>";
+       content+="<li>Size:"+data.size+"</li>";
+        $("#uploadparsed").append(content);
+}).fail(function(res) {
+	var content="Uploading fails";
+	$("#uploadparsed").append(content);
+});
+});
+
+
+     $("#cr").click(function(){ 
+     	var rtype=$("input:radio:checked").val();
+     	var datas="";
+     	if(rtype=="dataset")
+     	{
+        datas={source:"source/"+$("#cid").val()};
+        }
+        else if(rtype=="model")
+        {
+        datas={dataset:"dataset/"+$("#cid").val()};
+        }
+
+          $.ajax({
+            url: "http://localhost:8081/create?type="+rtype,
+            beforeSend: function(xhrObj){
+                // Request headers
+                xhrObj.setRequestHeader("Content-Type","application/json");
+            },
+            type:"POST",
+            contentType:"application/json;charset=utf-8",
+            data:JSON.stringify(datas),
+            success:function(data)
+            {
+              var content="";
+              $("#createparsed").empty();
+              content+="<li>Created Time:"+data.created+"</li>";
+              content+="<li>Resource:"+data.resource+"</li>";
+              content+="<li>Name:"+data.name+"</li>";
+              content+="<li>Size:"+data.size+"</li>";
+               $("#createparsed").append(content);
+            },
+        });
+
+     });
+
+
+      $("#de").click(function(){  
+   $.get("http://localhost:8081/deleteresource",
+  {
+    resourceid:$("#did").val(),
+    type:$("#selectDelete").val()
+  },
+  function(data)
+  {
+  	 $("#deleteinfo").empty();
+   	 $("#deleteinfo").prepend("You have deleted this resource successfully.");
+  }
+)
+});
+      
+      $("#up").click(function(){ 
+     	var rtype=$("#selectUpdate").val();
+        var params = {
+            // Request parameters
+            resourceid: $("#uid").val(),
+            type: $("#selectUpdate").val()
+        };
+        var datas={
+        	name:$("#uname").val(),
+        	description:$("#ude").val()
+        }
+
+          $.ajax({
+            url: "http://localhost:8081/update?"+$.param(params),
+            beforeSend: function(xhrObj){
+                // Request headers
+                xhrObj.setRequestHeader("Content-Type","application/json");
+            },
+            type:"PUT",
+            contentType:"application/json;charset=utf-8",
+            data:JSON.stringify(datas),
+            success:function(data)
+            {
+              $("#updateparsed").empty();
+              var content="Update succeeds";
+              content+="<li>Created Time:"+data.created+"</li>";
+              content+="<li>Updated Time:"+data.updated+"</li>";
+              content+="<li>Resource:"+data.resource+"</li>";
+               $("#updateparsed").append(content);
+            },
+        });
+     });
+
+
+    $("#att").click(function(){   
+   $.get("http://localhost:8081/getresource",
+  {
+    resourceid:$("#modelid").val(),
+    type:"model"
+  },
+  function(data)
+  {
+  	var content="";
+  	var number=0;
+	$("#preparsed").empty();
+    $("#preresult").empty();
+     content="<li>Name:"+data.name+"</li>";
+     content+="<li>Resource:"+data.resource+"</li>";
+     $("#preparsed").append(content);
+     var input=data.input_fields;
+      $.each(input,function(index,value)
+      {
+        number++;
+      });
+      attArray=new Array(number);
+      var i=0;
+      for(;i<number;i++)
+      {
+      	attArray[i]=input[i];
+      }
+      var fields=data.model.fields;
+      
+      attName=new Array(number);
+      for(i=0;i<number;i++)
+      {
+      	attName[i]=fields[attArray[i]].name;
+      } 
+      CreateInput();
+ }
+)
+});
+    
+    
+});
+
+</script>  
+</head>
+
+<body> 
+<div align="center"><h2>Data Mining with BigML</h2></div>
+<p> 
+    <a href=catalog.html>
+    Link to previous page</a>
+</p>
+<h3>Retrieve information about source/dataset/model/prediction</h3> 
+<select id="selectID">
+<option value="source">Source</option>
+<option value="dataset">Dataset</option>
+<option value="model">Model</option>
+<option value="prediction">Prediction</option>
+</select>
+    Resource id:<input type="text" id="rid" style="width:200px">
+    <button type="button" id="re" class="bt">Retrieve!</button>
+     <div id="parsed"> 
+     </div> 
+<hr>
+<h3>Upload local file to Create new Source</h3>
+<form id="uploadForm" enctype="multipart/form-data">
+    <input id="file" type="file" name="file"/>
+    <button id="upload" type="button" class="bt">Upload!</button>
+</form>
+ <div id="uploadparsed"> 
+ </div> 
+ <hr>
+ <h3>Create new dataset/model</h3>
+<input type=radio name="ctype" value="dataset">Source->Dataset</input>
+<input type=radio name="ctype" value="model">Dataset->Model</input>
+<br>Resource id:<input type="text" id="cid" style="width:200px">
+ <button type="button" id="cr" class="bt">Create!</button>
+ <div id="createparsed"> 
+ </div> 
+ <hr>
+ <h3>Delete source/dataset/model</h3>
+<select id="selectDelete">
+<option value="source">Source</option>
+<option value="dataset">Dataset</option>
+<option value="model">Model</option>
+<option value="prediction">Prediction</option>
+</select>
+Resource id:<input type="text" id="did" style="width:200px">
+ <button type="button" id="de"class="bt" class="bt">Delete!</button>
+ <div id="deleteinfo">
+ </div>
+ <hr>
+ <h3>Update the name and description of source/dataset/model</h3>
+<select id="selectUpdate">
+<option value="source">Source</option>
+<option value="dataset">Dataset</option>
+<option value="model">Model</option>
+<option value="prediction">Prediction</option>
+</select>
+Resource id:<input type="text" id="uid" style="width:200px">
+<form>
+Name:<input type="text" id="uname" style="width:200px">
+Description:<input type="text" id="ude" style="width:500px">
+<button type="button" id="up" class="bt">Update!</button>
+</form>
+<div id="updateparsed">
+</div>
+<hr>
+<h3>Make prediction</h3>
+Model id:<input type="text" id="modelid" style="width:200px">
+<button type="button" id="att" class="bt">Begin!</button>
+<div id="preparsed">
+</div>
+<div id="preresult">
+</div>
+
+ </body>  
+ </html>

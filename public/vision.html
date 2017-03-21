@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Analyzing Picture</title>
+ <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+  $("#url").change(function(){
+    $("#pic").attr("src",$("#url").val());
+    $("#result").empty();
+  });
+
+  $("#ana").click(function(){
+       var params = {
+            // Request parameters
+            visualFeatures: "Categories,Description",
+            languages: "en"
+        };
+
+      var picurl={"url":$("#url").val()};
+         
+        $.ajax({
+            url: "http://localhost:8081/pic?" + $.param(params),
+            beforeSend: function(xhrObj){
+                // Request headers
+                xhrObj.setRequestHeader("Content-Type","application/json");
+                xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key","092ac4f6fcbe444784cb523ec3ab4a33");
+            },
+            type:"POST",
+            dataType:'json',
+            contentType:"application/json;charset=utf-8",
+            data:JSON.stringify(picurl),
+            success:function(data)
+            {
+              Parse(data);
+            },
+            error:function(data)
+            {
+              console.log(data);
+            }
+        });
+        
+  });
+});
+
+function Parse(data)
+{
+      var content="<li>Category:"+"<br>";
+      var cat=data.categories;
+      $.each(cat,function(index,value)
+      {
+        content+=cat[index].name+"&nbsp;&nbsp;&nbsp;Possibility: "+cat[index].score+"<br>";
+      });
+      
+      content+="</li><li>Description:"+"<br>";
+      var caption=data.description.captions;
+       $.each(caption,function(index,value)
+      {
+        content+=caption[index].text+"&nbsp;&nbsp;&nbsp;Possibility: "+caption[index].confidence+"<br>";
+      });
+      content+="</li>";
+      $("#result").append(content);     
+}
+</script>
+</head>
+<body>
+<div align="center"><h2>Analyzing Pictures with Microsoft's Cognitive Services</h2></div>
+<p> 
+    <a href=catalog.html>
+    Link to previous page</a>
+</p>
+<form>
+ Picture URL:<p><textarea id="url" style="width:950px;height:50px;"></textarea></p>
+ </form>
+<img src="" alt="There should be a picture here" id="pic" width="300" height="300">
+<br>
+<button type="button" id="ana">Analyze!</button>
+<div id="result"></div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Analyzing Emotions</title>
+ <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+   $("#ana").click(function(){  
+
+        var info={
+            "text":$("#texts").val()
+        };
+
+
+        $.ajax({
+            url: "http://localhost:8081/text",
+            type:"POST",
+            dataType:'json',
+            contentType:"application/json;charset=utf-8",
+            data:JSON.stringify(info),
+            success:function(data)
+            {
+             // alert(data);
+              var content="";
+              var e=data.docEmotions;
+              content+="<li>Anger:"+e.anger+"</li>";
+              content+="<li>Disgust:"+e.disgust+"</li>";
+              content+="<li>Fear:"+e.fear+"</li>";
+              content+="<li>Joy:"+e.joy+"</li>";
+              content+="<li>Sadness:"+e.sadness+"</li>";
+              $("#result").html(content);
+            },
+            error:function(data)
+            {
+              console.log(data);
+            }
+        });
+        
+  });
+});
+
+
+</script>
+</head>
+<body>
+<div align="center"><h2>Analyzing Text Emotions with IBM's Watson Developer Cloud</h2></div>
+<p> 
+    <a href=catalog.html>
+    Link to previous page</a>
+</p>
+  Text to be analyzed:<p><textarea id="texts" style="width:950px;height:50px;"></textarea></p>
+<button type="button" id="ana">Analyze!</button>
+<div id="result"></div>
+</body>
+</html>

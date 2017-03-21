@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+ <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script>
+
+$(document).ready(function(){
+
+  $("#login").click(function(){ 
+         var info={};
+         info["username"]=$("#username").val();
+         info["password"]=$("#password").val();
+
+        $.ajax({
+            url: "http://localhost:8081/authenticate",
+            type:"POST",
+            dataType:'json',
+            contentType:"application/json;charset=utf-8",
+            data:JSON.stringify(info),
+            success:function(data)
+            {
+            if(data=="OK")
+            {
+              window.location.href="http://localhost:8081/catalog.html";
+            }
+            else
+            {
+             $("#info").text(data);
+            }
+           
+            },
+            error:function(data)
+            {
+              console.log(data);
+            }
+        });
+        
+  });
+});
+</script>
+</head>
+
+<body>
+<h2 align="center">Login in to Machine Learning Mashup</h2>
+<div align="center">
+Username:<input type="text" id="username" style="width:150px"><br>
+Password:<input type="password" id="password" style="width:150px"><br>
+<button align="center" id="login">Login!</button>
+</div>
+<div id="info" align="center">
+</div>
+<p align="center"> 
+    <a href=reg.html>
+    Register Now!</a>
+</p>
+</body>
+</html>
